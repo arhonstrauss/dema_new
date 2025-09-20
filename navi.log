@@ -1,0 +1,172 @@
+2025-09-20 11:28:26 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:28:26 | INFO     | __main__:main:47 - Starting exploration with xAI Grok Vision
+2025-09-20 11:28:26 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:28:26 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:28:26 | INFO     | src.core.browser:__init__:33 - Running in headless mode
+2025-09-20 11:28:26 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:28:30 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:28:30 | ERROR    | __main__:main:65 - Exploration failed: 'Config' object has no attribute 'xai_api_key'
+Traceback (most recent call last):
+
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+
+  File "C:\Users\arhon\dema_new\src\main.py", line 72, in <module>
+    asyncio.run(main())
+    │       │   └ <function main at 0x000002A320C12A20>
+    │       └ <function run at 0x000002A3200B4720>
+    └ <module 'asyncio' from 'C:\\Users\\arhon\\miniconda3\\Lib\\asyncio\\__init__.py'>
+
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           │      │   └ <coroutine object main at 0x000002A321238E80>
+           │      └ <function Runner.run at 0x000002A3205A7A60>
+           └ <asyncio.runners.Runner object at 0x000002A31FF85460>
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<main() running at C:\Users\arhon\dema_new\src\main.py:65> cb=[_run_until_complete_cb() at C...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x000002A3205A56C0>
+           │    └ <ProactorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x000002A31FF85460>
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\base_events.py", line 674, in run_until_complete
+    self.run_forever()
+    │    └ <function ProactorEventLoop.run_forever at 0x000002A320664D60>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\windows_events.py", line 322, in run_forever
+    super().run_forever()
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\base_events.py", line 641, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x000002A3205A7420>
+    └ <ProactorEventLoop running=True closed=False debug=False>
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\base_events.py", line 1987, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x000002A3204E59E0>
+    └ <Handle <_asyncio.TaskStepMethWrapper object at 0x000002A320C0D570>()>
+  File "C:\Users\arhon\miniconda3\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle <_asyncio.TaskStepMethWrapper object at 0x000002A320C0D570>()>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle <_asyncio.TaskStepMethWrapper object at 0x000002A320C0D570>()>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle <_asyncio.TaskStepMethWrapper object at 0x000002A320C0D570>()>
+
+> File "C:\Users\arhon\dema_new\src\main.py", line 51, in main
+    vision_analyzer = VisionAnalyzer(api_key=config.xai_api_key)
+                      │                      └ Config(openai_api_key=None, screenshots_dir='screenshots', max_steps=50, headless=True)
+                      └ <class 'src.core.vision.VisionAnalyzer'>
+
+  File "C:\Users\arhon\dema_new\.venv\Lib\site-packages\pydantic\main.py", line 892, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+                                 │                                          └ 'xai_api_key'
+                                 └ Config(openai_api_key=None, screenshots_dir='screenshots', max_steps=50, headless=True)
+
+AttributeError: 'Config' object has no attribute 'xai_api_key'. Did you mean: 'openai_api_key'?
+2025-09-20 11:28:30 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:28:32 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:28:48 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:28:48 | INFO     | __main__:main:47 - Starting exploration with xAI Grok Vision
+2025-09-20 11:28:48 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:28:48 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:28:48 | INFO     | src.core.browser:__init__:33 - Running in headless mode
+2025-09-20 11:28:48 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:28:52 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:28:52 | INFO     | src.core.vision:__init__:19 - Initializing VisionAnalyzer
+2025-09-20 11:28:53 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:28:53 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://example.com
+2025-09-20 11:28:55 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:28:55 | ERROR    | src.core.vision:analyze_screenshot:126 - Error analyzing screenshot: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_xai*********here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:28:55 | ERROR    | src.strategies.explorer:explore:65 - Vision analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_xai*********here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:28:55 | WARNING  | __main__:main:62 - Exploration completed but no workflow was returned
+2025-09-20 11:28:55 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:28:58 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:30:16 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:30:16 | INFO     | __main__:main:47 - Starting exploration with xAI Grok Vision
+2025-09-20 11:30:16 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:30:16 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:30:16 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:30:19 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:30:19 | INFO     | src.core.vision:__init__:19 - Initializing VisionAnalyzer
+2025-09-20 11:30:20 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:30:20 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://www.allrecipes.com/recipe/25678/beef-stew-vi/
+2025-09-20 11:30:23 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:30:23 | ERROR    | src.core.vision:analyze_screenshot:126 - Error analyzing screenshot: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_xai*********here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:30:23 | ERROR    | src.strategies.explorer:explore:65 - Vision analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_xai*********here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:30:23 | WARNING  | __main__:main:62 - Exploration completed but no workflow was returned
+2025-09-20 11:30:23 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:30:25 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:32:25 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:32:25 | INFO     | __main__:main:48 - Starting exploration with xAI Grok Vision
+2025-09-20 11:32:25 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:32:25 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:32:25 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:32:29 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:32:29 | INFO     | src.core.vision:__init__:19 - Initializing VisionAnalyzer
+2025-09-20 11:32:29 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:32:29 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://www.allrecipes.com/recipe/25678/beef-stew-vi/
+2025-09-20 11:32:32 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:32:32 | ERROR    | src.core.vision:analyze_screenshot:126 - Error analyzing screenshot: Error code: 401 - {'error': {'message': 'Incorrect API key provided: xai-t6WC************************************************************************rBpb. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:32:32 | ERROR    | src.strategies.explorer:explore:65 - Vision analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: xai-t6WC************************************************************************rBpb. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:32:32 | WARNING  | __main__:main:63 - Exploration completed but no workflow was returned
+2025-09-20 11:32:32 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:32:35 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:33:16 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:33:16 | INFO     | __main__:main:48 - Starting exploration with xAI Grok Vision
+2025-09-20 11:33:16 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:33:16 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:33:16 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:33:20 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:33:20 | INFO     | src.core.vision:__init__:19 - Initializing VisionAnalyzer
+2025-09-20 11:33:20 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:33:20 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://www.allrecipes.com/recipe/25678/beef-stew-vi/
+2025-09-20 11:33:23 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:33:24 | ERROR    | src.core.vision:analyze_screenshot:126 - Error analyzing screenshot: Error code: 401 - {'error': {'message': 'Incorrect API key provided: xai-t6WC************************************************************************rBpb. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:33:24 | ERROR    | src.strategies.explorer:explore:65 - Vision analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: xai-t6WC************************************************************************rBpb. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-09-20 11:33:24 | WARNING  | __main__:main:63 - Exploration completed but no workflow was returned
+2025-09-20 11:33:24 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:33:26 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:35:50 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:35:50 | INFO     | __main__:main:48 - Starting exploration with xAI Grok Vision
+2025-09-20 11:35:50 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:35:50 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:35:50 | INFO     | src.core.browser:__init__:33 - Running in headless mode
+2025-09-20 11:35:50 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:35:53 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:35:53 | INFO     | src.core.vision:__init__:17 - Initializing VisionAnalyzer with xAI
+2025-09-20 11:35:53 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:35:53 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://example.com
+2025-09-20 11:35:56 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:35:58 | INFO     | src.core.vision:analyze_screenshot:67 - Received analysis from xAI Grok Vision
+2025-09-20 11:35:58 | DEBUG    | src.core.vision:analyze_screenshot:68 - Raw xAI response: Based on the provided screenshot, here is the analysis for finding the main heading:
+
+- **Main Heading**: The main heading on this page is "Example Domain". It is located at the top of the content box and is in bold text, which typically indicates its importance as the primary title of the page.
+
+This heading is the most prominent text on the page, indicating that it is the main heading. The rest of the content provides additional information but does not serve as the main title. 
+
+If you need further analysis or have any other objectives, please let me know!
+2025-09-20 11:35:58 | INFO     | src.core.vision:extract_interaction_targets:85 - Extracting interaction targets from analysis
+2025-09-20 11:35:58 | INFO     | __main__:main:60 - Exploration completed. Recorded 0 interactions
+2025-09-20 11:35:58 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:36:00 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
+2025-09-20 11:36:21 | DEBUG    | src.utils.logging:setup_logging:32 - Logging initialized
+2025-09-20 11:36:21 | INFO     | __main__:main:48 - Starting exploration with xAI Grok Vision
+2025-09-20 11:36:21 | INFO     | src.core.browser:__init__:26 - Initializing Browser
+2025-09-20 11:36:21 | DEBUG    | src.core.browser:__init__:29 - Created screenshots directory: screenshots
+2025-09-20 11:36:21 | DEBUG    | src.core.browser:__init__:43 - Setting up ChromeDriver
+2025-09-20 11:36:25 | DEBUG    | src.core.browser:__init__:46 - ChromeDriver initialized
+2025-09-20 11:36:25 | INFO     | src.core.vision:__init__:17 - Initializing VisionAnalyzer with xAI
+2025-09-20 11:36:25 | INFO     | src.strategies.explorer:__init__:26 - Initializing GPTGuidedExplorer
+2025-09-20 11:36:25 | INFO     | src.strategies.explorer:explore:38 - Starting exploration of https://www.allrecipes.com/recipe/25678/beef-stew-vi/
+2025-09-20 11:36:28 | DEBUG    | src.core.browser:take_screenshot:78 - Screenshot saved: screenshots\current.png
+2025-09-20 11:36:29 | INFO     | src.core.vision:analyze_screenshot:67 - Received analysis from xAI Grok Vision
+2025-09-20 11:36:29 | DEBUG    | src.core.vision:analyze_screenshot:68 - Raw xAI response: Based on the screenshot provided, here is the analysis for finding the website name and author:
+
+1. **Website Name**: The website name is **Allrecipes**. This is evident from the logo and text at the top left corner of the screenshot.
+
+2. **Author**: The author of the recipe "Homemade Beef Stew" is **France C**. This information is found below the recipe title and rating.
+
+If you need any further details or analysis, feel free to ask!
+2025-09-20 11:36:29 | INFO     | src.core.vision:extract_interaction_targets:85 - Extracting interaction targets from analysis
+2025-09-20 11:36:29 | INFO     | __main__:main:60 - Exploration completed. Recorded 0 interactions
+2025-09-20 11:36:29 | INFO     | src.core.browser:close:191 - Closing browser
+2025-09-20 11:36:32 | DEBUG    | src.core.browser:close:194 - Browser closed successfully
