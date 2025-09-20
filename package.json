@@ -1,0 +1,48 @@
+{
+  "name": "people-search",
+  "version": "1.0.0",
+  "description": "A TypeScript-based tool that uses xAI's Grok-4 model to search for and provide comprehensive information about people.",
+  "main": "index.js",
+  "bin": {
+    "people-search": "./dist/cli.js",
+    "social-search": "./dist/socialCli.js",
+    "social-agent": "./dist/socialAgent.js"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "dev:social": "tsx src/socialCli.ts",
+    "dev:agent": "tsx src/socialAgent.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arhonstrauss/dema_new.git"
+  },
+  "keywords": [
+    "people-search",
+    "xai",
+    "grok",
+    "typescript",
+    "cli"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arhonstrauss/dema_new/issues"
+  },
+  "homepage": "https://github.com/arhonstrauss/dema_new#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/node": "^24.5.2",
+    "dotenv": "^17.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "undici": "^7.16.0",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5"
+  }
+}

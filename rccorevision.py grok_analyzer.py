@@ -1,0 +1,73 @@
+﻿import argparse
+import asyncio
+from dotenv import load_dotenv
+from loguru import logger
+
+from src.core.browser import Browser
+from src.core.vision import VisionAnalyzer
+from src.models.workflow import Workflow
+from src.strategies.explorer import GPTGuidedExplorer
+from src.utils.config import Config
+from src.utils.logging import setup_logging
+
+
+def print_workflow_summary(workflow):
+    print('\n=== Workflow Summary ===\n')
+    interactions = workflow.get_all_interactions()
+    if not interactions:
+        print('No interactions recorded.')
+        return
+    for i, interaction in enumerate(interactions, 1):
+        print('Step {}: {}'.format(i, interaction.type.value))
+        print('  URL: {}'.format(interaction.url))
+        print('  Time: {}'.format(interaction.timestamp))
+        if interaction.selector:
+            print('  Selector: {}'.format(interaction.selector))
+        if interaction.value:
+            print('  Value: {}'.format(interaction.value))
+        print('-' * 50)
+    print('\nTotal interactions: {}'.format(workflow.get_interaction_count()))
+
+
+async def main():
+    parser = argparse.ArgumentParser(description='Intelligent web explorer using xAI Grok Vision')
+    parser.add_argument('url', help='Starting URL to explore')
+    parser.add_argument('objective', help='Exploration objective')
+    parser.add_argument('--config', default='.env', help='Path to config file')
+    parser.add_argument('--headless', action='store_true', help='Run in headless mode')
+    parser.add_argument('--log-level', default='INFO', help='Set the console logging level')
+    args = parser.parse_args()
+    
+    # Load environment variables from the specified config file
+    load_dotenv(args.config)
+    config = Config.from_env(args.config)
+    if args.headless:
+        config.headless = True
+    
+    setup_logging(console_level=args.log_level)
+    logger.info('Starting exploration with xAI Grok Vision')
+    
+    try:
+        browser = Browser(screenshots_dir=config.screenshots_dir, headless=config.headless)
+        vision_analyzer = VisionAnalyzer(api_key=config.xai_api_key)
+        workflow = Workflow()
+        
+        explorer = GPTGuidedExplorer(browser=browser, vision_analyzer=vision_analyzer, workflow=workflow, max_steps=config.max_steps, screenshot_dir=config.screenshots_dir)
+        
+        final_workflow = await explorer.explore(args.url, args.objective)
+        
+        if final_workflow:
+            logger.info('Exploration completed. Recorded {} interactions'.format(final_workflow.get_interaction_count()))
+            print_workflow_summary(final_workflow)
+        else:
+            logger.warning('Exploration completed but no workflow was returned')
+        
+    except Exception as e:
+        logger.exception('Exploration failed: {}'.format(str(e)))
+        raise
+    finally:
+        browser.close()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
