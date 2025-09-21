@@ -20,7 +20,7 @@ export async function hybridSocialSearch(options: HybridSearchOptions) {
     includeInstagram = false,
     includeFacebook = false,
     includeNews = true,
-    maxResults = 10,
+    maxResults = 30,
     stream = false
   } = options;
 
@@ -122,7 +122,7 @@ export async function searchPersonWithSocialMedia(
     includeInstagram: options.instagram || false,
     includeFacebook: options.facebook || false,
     includeNews: true,
-    maxResults: 10,
+    maxResults: 30,
     stream: false
   });
 }

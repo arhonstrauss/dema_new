@@ -23,7 +23,7 @@ function parseArgs(): SocialCLIOptions {
     console.error('  --instagram                Include Instagram data via MCP');
     console.error('  --facebook                 Include Facebook data via MCP');
     console.error('  --no-news                  Exclude news sources from search');
-    console.error('  --max N                    Maximum number of search results (default: 10)');
+    console.error('  --max N                    Maximum number of search results (default: 30)');
     console.error('  --stream                   Stream the response in real-time');
     console.error('');
     console.error('Examples:');
@@ -119,7 +119,7 @@ async function main() {
       includeInstagram: options.instagram || false,
       includeFacebook: options.facebook || false,
       includeNews: options.news !== false,
-      maxResults: options.max || 10,
+      maxResults: options.max || 30,
       stream: options.stream || false
     });
 

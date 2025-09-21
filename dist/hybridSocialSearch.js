@@ -3,7 +3,7 @@ import { igProfile, igRecentPosts } from './networks/instagram.js';
 import { fbPosts } from './networks/facebook.js';
 import { askGrok } from './client.js';
 export async function hybridSocialSearch(options) {
-    const { name, context, includeInstagram = false, includeFacebook = false, includeNews = true, maxResults = 10, stream = false } = options;
+    const { name, context, includeInstagram = false, includeFacebook = false, includeNews = true, maxResults = 30, stream = false } = options;
     console.log(`🔍 Starting hybrid social search for: ${name}`);
     const results = {
         xaiSearch: null,
@@ -89,7 +89,7 @@ export async function searchPersonWithSocialMedia(name, options = {}) {
         includeInstagram: options.instagram || false,
         includeFacebook: options.facebook || false,
         includeNews: true,
-        maxResults: 10,
+        maxResults: 30,
         stream: false
     });
 }

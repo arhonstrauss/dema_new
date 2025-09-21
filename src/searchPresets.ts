@@ -39,7 +39,7 @@ export function peopleLookupPreset(opts: SearchPresetOptions = {}) {
     ],
     mode: forceSearch ? 'on' : 'auto',
     return_citations: true,
-    max_search_results: Math.min(maxSearchResults, 10) // Cap at 10 for reliability
+    max_search_results: Math.min(maxSearchResults, 30) // Cap at 30 for reliability
   };
 
   // Add news source if requested
