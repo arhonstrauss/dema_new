@@ -2,8 +2,6 @@ export interface PersonSearchOptions {
     name: string;
     address?: string;
     context?: string;
-    siteAllowList?: string[];
-    xHandles?: string[];
     fromDate?: string;
     toDate?: string;
     maxResults?: number;
@@ -12,5 +10,5 @@ export interface PersonSearchOptions {
     includeFacebook?: boolean;
     includeNews?: boolean;
 }
-export declare function searchPerson(options: PersonSearchOptions): Promise<any>;
-//# sourceMappingURL=personSearch.d.ts.map
+export declare function searchPersonOpenAI(options: PersonSearchOptions): Promise<any>;
+//# sourceMappingURL=personSearchOpenAI.d.ts.map

@@ -1,5 +1,4 @@
-import { chatCompletion, chatCompletionStream } from './client.js';
-import { peopleLookupPreset } from './searchPresets.js';
+import { openaiCompletion, openaiCompletionStream } from './openaiClient.js';
 
 declare const process: {
   env: { [key: string]: string | undefined };
@@ -9,8 +8,6 @@ export interface PersonSearchOptions {
   name: string;
   address?: string;
   context?: string;
-  siteAllowList?: string[];
-  xHandles?: string[];
   fromDate?: string;
   toDate?: string;
   maxResults?: number;
@@ -20,13 +17,11 @@ export interface PersonSearchOptions {
   includeNews?: boolean;
 }
 
-export async function searchPerson(options: PersonSearchOptions) {
+export async function searchPersonOpenAI(options: PersonSearchOptions) {
   const {
     name,
     address,
     context,
-    siteAllowList = [],
-    xHandles = [],
     fromDate,
     toDate,
     maxResults,
@@ -35,26 +30,6 @@ export async function searchPerson(options: PersonSearchOptions) {
     includeFacebook = false,
     includeNews = true
   } = options;
-
-  // Build search parameters
-  const searchParameters = peopleLookupPreset({
-    includedXHandles: xHandles,
-    includeInstagram,
-    includeFacebook,
-    includeNews,
-    forceSearch: false
-  });
-
-  // Override date and max results if provided
-  if (fromDate) {
-    searchParameters.from_date = fromDate;
-  }
-  if (toDate) {
-    searchParameters.to_date = toDate;
-  }
-  if (maxResults) {
-    searchParameters.max_search_results = maxResults;
-  }
 
   // Build system and user messages
   var systemMessage = `You are an outstanding private investigator primarily focusing on digital sleuthing. You know how to search to get broad results which you can then anayze to draw conclusions.
@@ -86,29 +61,26 @@ export async function searchPerson(options: PersonSearchOptions) {
   `;
 
   const requestBody = {
-    model: process.env.XAI_MODEL || 'grok-4',
-    messages: [
-      { role: 'system', content: systemMessage },
-      { role: 'user', content: userMessage }
-    ],
-    search_parameters: searchParameters,
+    model: process.env.OPENAI_MODEL || 'gpt-4o',
+    instructions: systemMessage,
+    input: userMessage,
+    temperature: 0.2,
+    max_tokens: 4000,
     stream: stream
   };
 
   if (stream) {
-    let citations: any = undefined;
     let usage: any = undefined;
 
-    const result = await chatCompletionStream(requestBody, (token: string) => {
+    const result = await openaiCompletionStream(requestBody, (token: string) => {
       console.log(token);
     });
 
     return {
-      citations: result.citations,
       usage: result.usage
     };
   } else {
-    const response = await chatCompletion(requestBody);
+    const response = await openaiCompletion(requestBody);
     return response;
   }
 }

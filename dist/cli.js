@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 import { searchPerson } from './personSearch.js';
+import { synthesizeToJSON } from './jsonSynthesis.js';
+import { processCsvFile } from './processCsv.js';
 function parseArgs() {
     const args = process.argv.slice(2);
     if (args.length === 0) {
         console.error('Usage: people-search "Full Name" [options]');
+        console.error('       people-search --csv input.csv output.csv');
         console.error('');
         console.error('Options:');
+        console.error('  --address "Address"        Known address to help narrow search');
         console.error('  --context "Organization"    Focus search on specific organization/context');
         console.error('  --allow site1,site2        Comma-separated list of allowed websites');
         console.error('  --x @handle1,@handle2      Comma-separated list of X (Twitter) handles to include');
@@ -13,6 +17,8 @@ function parseArgs() {
         console.error('  --to YYYY-MM-DD            End date for search results');
         console.error('  --max N                    Maximum number of search results (default: 25, max: 29)');
         console.error('  --stream                   Stream the response in real-time');
+        console.error('  --json                     Output results in structured JSON format');
+        console.error('  --csv input.csv output.csv Process CSV file with multiple people');
         console.error('  --instagram                Include Instagram in search sources');
         console.error('  --facebook                 Include Facebook in search sources');
         console.error('  --no-news                  Exclude news sources from search');
@@ -20,8 +26,19 @@ function parseArgs() {
         console.error('Examples:');
         console.error('  people-search "Elon Musk"');
         console.error('  people-search "John Doe" --context "OpenAI" --stream');
-        console.error('  people-search "Jane Smith" --allow linkedin.com,github.com --x @janesmith');
+        console.error('  people-search "Jane Smith" --address "123 Main St, City" --json');
+        console.error('  people-search --csv people.csv results.csv');
+        console.error('  people-search "Bob Wilson" --allow linkedin.com,github.com --x @bobwilson --json');
         process.exit(1);
+    }
+    // Check for CSV processing mode
+    if (args[0] === '--csv') {
+        if (args.length < 3) {
+            console.error('Error: --csv requires input and output file paths');
+            console.error('Usage: people-search --csv input.csv output.csv');
+            process.exit(1);
+        }
+        return { name: '', csv: true, csvInput: args[1], csvOutput: args[2] };
     }
     const name = args[0];
     const options = { name };
@@ -29,6 +46,16 @@ function parseArgs() {
         const arg = args[i];
         const nextArg = args[i + 1];
         switch (arg) {
+            case '--address':
+                if (nextArg && !nextArg.startsWith('--')) {
+                    options.address = nextArg;
+                    i++; // Skip next argument
+                }
+                else {
+                    console.error('Error: --address requires a value');
+                    process.exit(1);
+                }
+                break;
             case '--context':
                 if (nextArg && !nextArg.startsWith('--')) {
                     options.context = nextArg;
@@ -97,6 +124,9 @@ function parseArgs() {
             case '--stream':
                 options.stream = true;
                 break;
+            case '--json':
+                options.json = true;
+                break;
             case '--instagram':
                 options.instagram = true;
                 break;
@@ -116,7 +146,15 @@ function parseArgs() {
 async function main() {
     try {
         const options = parseArgs();
+        // Handle CSV processing mode
+        if (options.csv) {
+            await processCsvFile(options.csvInput, options.csvOutput);
+            return;
+        }
         console.log(`Searching for information about: ${options.name}`);
+        if (options.address) {
+            console.log(`Address: ${options.address}`);
+        }
         if (options.context) {
             console.log(`Context: ${options.context}`);
         }
@@ -138,6 +176,7 @@ async function main() {
         console.log('');
         const result = await searchPerson({
             name: options.name,
+            address: options.address,
             context: options.context,
             siteAllowList: options.allow,
             xHandles: options.x,
@@ -149,7 +188,32 @@ async function main() {
             includeFacebook: options.facebook,
             includeNews: options.news
         });
-        if (!options.stream) {
+        if (options.json) {
+            // Extract the raw text content for JSON synthesis
+            let rawContent = '';
+            if (result.choices && result.choices[0] && result.choices[0].message) {
+                rawContent = result.choices[0].message.content;
+            }
+            else if (result.output && result.output[0] && result.output[0].content && result.output[0].content[0]) {
+                rawContent = result.output[0].content[0].text;
+            }
+            if (rawContent) {
+                console.log('\nSynthesizing results into structured JSON...');
+                try {
+                    const jsonAnalysis = await synthesizeToJSON(rawContent);
+                    console.log('\n' + JSON.stringify(jsonAnalysis, null, 2));
+                }
+                catch (error) {
+                    console.error('Error synthesizing to JSON:', error instanceof Error ? error.message : String(error));
+                    console.log('\n--- Raw Output ---');
+                    console.log(rawContent);
+                }
+            }
+            else {
+                console.error('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,No content found to synthesize');
+            }
+        }
+        else if (!options.stream) {
             // Print the response content
             if (result.choices && result.choices[0] && result.choices[0].message) {
                 console.log('\n' + result.choices[0].message.content);
