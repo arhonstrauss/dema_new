@@ -8,74 +8,91 @@ export async function processCsvFile(inputPath, outputPath) {
     // Read and parse the input CSV
     const csvContent = readFileSync(inputPath, 'utf-8');
     const records = parse(csvContent, {
-        columns: true,
+        // Normalize header names to lowercase so "Name, Address, Context" map correctly
+        columns: (header) => header.map(h => h.trim().toLowerCase()),
         skip_empty_lines: true,
         trim: true
     });
     console.log(`Found ${records.length} people to process`);
     const processedRows = [];
-    for (let i = 0; i < records.length; i++) {
-        const person = records[i];
-        console.log(`\nProcessing ${i + 1}/${records.length}: ${person.name}`);
-        try {
-            // Search for the person
-            const searchResult = await searchPerson({
-                name: person.name,
-                address: person.address,
-                context: person.context,
-                stream: false,
-                includeInstagram: false,
-                includeFacebook: false,
-                includeNews: true
-            });
-            // Extract the raw content
-            let rawContent = '';
-            if (searchResult.choices && searchResult.choices[0] && searchResult.choices[0].message) {
-                rawContent = searchResult.choices[0].message.content;
-            }
-            else if (searchResult.output && searchResult.output[0] && searchResult.output[0].content && searchResult.output[0].content[0]) {
-                rawContent = searchResult.output[0].content[0].text;
-            }
-            if (!rawContent) {
-                console.log(`  No content found for ${person.name}`);
-                processedRows.push({
-                    ...person,
-                    fullOutput: 'No information found',
-                    topIssues: []
-                });
+    const concurrency = Math.max(1, parseInt(process.env.CSV_CONCURRENCY || '3'));
+    console.log(`Using concurrency: ${concurrency}`);
+    let nextIndex = 0;
+    async function worker(workerId) {
+        while (true) {
+            const i = nextIndex++;
+            if (i >= records.length)
+                return;
+            const person = records[i];
+            if (!person.name || person.name.trim().length === 0) {
+                console.warn(`\nSkipping row ${i + 1}: missing required name field`);
                 continue;
             }
-            // Synthesize to JSON
-            console.log(`  Synthesizing results for ${person.name}...`);
-            const analysis = await synthesizeToJSON(rawContent);
-            // Extract top 5 issues
-            const topIssues = analysis.keyIssues
-                .sort((a, b) => b.confidence - a.confidence)
-                .slice(0, 5)
-                .map(issue => ({
-                issue: issue.issue,
-                stance: issue.stance,
-                reasoning: issue.reasoning
-            }));
-            processedRows.push({
-                ...person,
-                fullOutput: analysis.fullOutput,
-                topIssues
-            });
-            console.log(`  ✓ Completed ${person.name}`);
-            // Add a small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        catch (error) {
-            console.error(`  ✗ Error processing ${person.name}:`, error instanceof Error ? error.message : String(error));
-            processedRows.push({
-                ...person,
-                fullOutput: `Error: ${error instanceof Error ? error.message : String(error)}`,
-                topIssues: []
-            });
+            console.log(`\n[W${workerId}] Processing ${i + 1}/${records.length}: ${person.name}`);
+            try {
+                // Search for the person
+                const searchResult = await searchPerson({
+                    name: person.name,
+                    address: person.address,
+                    context: person.context,
+                    stream: false,
+                    includeInstagram: false,
+                    includeFacebook: false,
+                    includeNews: true
+                });
+                // Extract the raw content
+                let rawContent = '';
+                if (searchResult.choices && searchResult.choices[0] && searchResult.choices[0].message) {
+                    rawContent = searchResult.choices[0].message.content;
+                }
+                else if (searchResult.output && searchResult.output[0] && searchResult.output[0].content && searchResult.output[0].content[0]) {
+                    rawContent = searchResult.output[0].content[0].text;
+                }
+                if (!rawContent) {
+                    console.log(`  No content found for ${person.name}`);
+                    processedRows.push({
+                        ...person,
+                        fullOutput: 'No information found',
+                        topIssues: [],
+                        _idx: i
+                    });
+                    continue;
+                }
+                // Synthesize to JSON
+                console.log(`  Synthesizing results for ${person.name}...`);
+                const analysis = await synthesizeToJSON(rawContent);
+                // Extract top 5 issues
+                const topIssues = analysis.keyIssues
+                    .sort((a, b) => b.confidence - a.confidence)
+                    .slice(0, 5)
+                    .map(issue => ({
+                    issue: issue.issue,
+                    stance: issue.stance,
+                    reasoning: issue.reasoning
+                }));
+                processedRows.push({
+                    ...person,
+                    fullOutput: analysis.fullOutput,
+                    topIssues,
+                    _idx: i
+                });
+                console.log(`  ✓ Completed ${person.name}`);
+            }
+            catch (error) {
+                console.error(`  ✗ Error processing ${person.name}:`, error instanceof Error ? error.message : String(error));
+                processedRows.push({
+                    ...person,
+                    fullOutput: `Error: ${error instanceof Error ? error.message : String(error)}`,
+                    topIssues: [],
+                    _idx: i
+                });
+            }
         }
     }
-    // Convert to CSV format
+    // Launch workers
+    await Promise.all(Array.from({ length: concurrency }, (_, idx) => worker(idx + 1)));
+    // Convert to CSV format (preserve original input order)
+    processedRows.sort((a, b) => a._idx - b._idx);
     const csvData = processedRows.map(row => {
         const csvRow = {
             name: row.name,

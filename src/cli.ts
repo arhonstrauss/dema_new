@@ -8,6 +8,7 @@ interface CLIOptions {
   name: string;
   address?: string;
   context?: string;
+  concurrency?: number;
   allow?: string[];
   x?: string[];
   from?: string;
@@ -28,7 +29,7 @@ function parseArgs(): CLIOptions {
   
   if (args.length === 0) {
     console.error('Usage: people-search "Full Name" [options]');
-    console.error('       people-search --csv input.csv output.csv');
+    console.error('       people-search --csv input.csv output.csv [--concurrency N]');
     console.error('');
     console.error('Options:');
     console.error('  --address "Address"        Known address to help narrow search');
@@ -41,6 +42,7 @@ function parseArgs(): CLIOptions {
     console.error('  --stream                   Stream the response in real-time');
     console.error('  --json                     Output results in structured JSON format');
     console.error('  --csv input.csv output.csv Process CSV file with multiple people');
+    console.error('  --concurrency N            Number of parallel workers for --csv (default: 3)');
     console.error('  --instagram                Include Instagram in search sources');
     console.error('  --facebook                 Include Facebook in search sources');
     console.error('  --no-news                  Exclude news sources from search');
@@ -61,7 +63,32 @@ function parseArgs(): CLIOptions {
       console.error('Usage: people-search --csv input.csv output.csv');
       process.exit(1);
     }
-    return { name: '', csv: true, csvInput: args[1], csvOutput: args[2] } as any;
+    const options: any = { name: '', csv: true, csvInput: args[1], csvOutput: args[2] };
+    // Parse additional CSV-related flags (starting from index 3)
+    for (let i = 3; i < args.length; i++) {
+      const arg = args[i];
+      const nextArg = args[i + 1];
+      switch (arg) {
+        case '--concurrency':
+          if (nextArg && !nextArg.startsWith('--')) {
+            const c = parseInt(nextArg);
+            if (isNaN(c) || c <= 0) {
+              console.error('Error: --concurrency requires a positive number');
+              process.exit(1);
+            }
+            options.concurrency = c;
+            i++; // skip value
+          } else {
+            console.error('Error: --concurrency requires a value');
+            process.exit(1);
+          }
+          break;
+        default:
+          console.error(`Error: Unknown option ${arg}`);
+          process.exit(1);
+      }
+    }
+    return options as CLIOptions & { csv: boolean; csvInput: string; csvOutput: string };
   }
 
   const name = args[0];
@@ -182,7 +209,7 @@ async function main() {
     
     // Handle CSV processing mode
     if (options.csv) {
-      await processCsvFile(options.csvInput!, options.csvOutput!);
+      await processCsvFile(options.csvInput!, options.csvOutput!, options.concurrency);
       return;
     }
     

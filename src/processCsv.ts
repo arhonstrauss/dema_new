@@ -16,6 +16,9 @@ export interface PersonRow {
 
 export interface ProcessedPersonRow extends PersonRow {
   fullOutput: string;
+  estimatedPolitics: string;
+  estimatedPoliticsConfidence: number;
+  estimatedPoliticsReasoning: string;
   topIssues: Array<{
     issue: string;
     stance: string;
@@ -23,91 +26,118 @@ export interface ProcessedPersonRow extends PersonRow {
   }>;
 }
 
-export async function processCsvFile(inputPath: string, outputPath: string): Promise<void> {
+export async function processCsvFile(inputPath: string, outputPath: string, cliConcurrency?: number): Promise<void> {
   console.log(`Reading CSV file: ${inputPath}`);
   
   // Read and parse the input CSV
   const csvContent = readFileSync(inputPath, 'utf-8');
-  const records: PersonRow[] = parse(csvContent, {
-    columns: true,
+  const records = parse<PersonRow>(csvContent, {
+    // Normalize header names to lowercase so "Name, Address, Context" map correctly
+    columns: (header: string[]) => header.map(h => h.trim().toLowerCase()),
     skip_empty_lines: true,
     trim: true
   });
 
   console.log(`Found ${records.length} people to process`);
 
-  const processedRows: ProcessedPersonRow[] = [];
+  const processedRows: Array<ProcessedPersonRow & { _idx: number }> = [];
 
-  for (let i = 0; i < records.length; i++) {
-    const person = records[i];
-    console.log(`\nProcessing ${i + 1}/${records.length}: ${person.name}`);
+  const concurrency = Math.max(1, Number.isFinite(cliConcurrency as number) && (cliConcurrency as number)! > 0 ? (cliConcurrency as number) : parseInt(process.env.CSV_CONCURRENCY || '3'));
+  console.log(`Using concurrency: ${concurrency}`);
 
-    try {
-      // Search for the person
-      const searchResult = await searchPerson({
-        name: person.name,
-        address: person.address,
-        context: person.context,
-        stream: false,
-        includeInstagram: false,
-        includeFacebook: false,
-        includeNews: true
-      });
+  let nextIndex = 0;
+  async function worker(workerId: number) {
+    while (true) {
+      const i = nextIndex++;
+      if (i >= records.length) return;
 
-      // Extract the raw content
-      let rawContent = '';
-      if (searchResult.choices && searchResult.choices[0] && searchResult.choices[0].message) {
-        rawContent = searchResult.choices[0].message.content;
-      } else if (searchResult.output && searchResult.output[0] && searchResult.output[0].content && searchResult.output[0].content[0]) {
-        rawContent = searchResult.output[0].content[0].text;
-      }
-
-      if (!rawContent) {
-        console.log(`  No content found for ${person.name}`);
-        processedRows.push({
-          ...person,
-          fullOutput: 'No information found',
-          topIssues: []
-        });
+      const person = records[i];
+      if (!person.name || person.name.trim().length === 0) {
+        console.warn(`\nSkipping row ${i + 1}: missing required name field`);
         continue;
       }
 
-      // Synthesize to JSON
-      console.log(`  Synthesizing results for ${person.name}...`);
-      const analysis: PoliticalAnalysis = await synthesizeToJSON(rawContent);
+      console.log(`\n[W${workerId}] Processing ${i + 1}/${records.length}: ${person.name}`);
 
-      // Extract top 5 issues
-      const topIssues = analysis.keyIssues
-        .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, 5)
-        .map(issue => ({
-          issue: issue.issue,
-          stance: issue.stance,
-          reasoning: issue.reasoning
-        }));
+      try {
+        // Search for the person
+        const searchResult = await searchPerson({
+          name: person.name,
+          address: person.address,
+          context: person.context,
+          stream: false,
+          includeInstagram: false,
+          includeFacebook: false,
+          includeNews: true
+        });
 
-      processedRows.push({
-        ...person,
-        fullOutput: analysis.fullOutput,
-        topIssues
-      });
+        // Extract the raw content
+        let rawContent = '';
+        if (searchResult.choices && searchResult.choices[0] && searchResult.choices[0].message) {
+          rawContent = searchResult.choices[0].message.content;
+        } else if (searchResult.output && searchResult.output[0] && searchResult.output[0].content && searchResult.output[0].content[0]) {
+          rawContent = searchResult.output[0].content[0].text;
+        }
 
-      console.log(`  ✓ Completed ${person.name}`);
+        if (!rawContent) {
+          console.log(`  No content found for ${person.name}`);
+          processedRows.push({
+            ...person,
+            fullOutput: 'No information found',
+            estimatedPolitics: 'No information found',
+            estimatedPoliticsConfidence: 0,
+            estimatedPoliticsReasoning: 'No information found',
+            topIssues: [],
+            _idx: i
+          });
+          continue;
+        }
 
-      // Add a small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+        // Synthesize to JSON
+        console.log(`  Synthesizing results for ${person.name}...`);
+        const analysis: PoliticalAnalysis = await synthesizeToJSON(rawContent);
 
-    } catch (error) {
-      console.error(`  ✗ Error processing ${person.name}:`, error instanceof Error ? error.message : String(error));
-      processedRows.push({
-        ...person,
-        fullOutput: `Error: ${error instanceof Error ? error.message : String(error)}`,
-        topIssues: []
-      });
+        // Extract top 5 issues
+        const topIssues = analysis.keyIssues
+          .sort((a, b) => b.confidence - a.confidence)
+          .slice(0, 5)
+          .map(issue => ({
+            issue: issue.issue,
+            stance: issue.stance,
+            reasoning: issue.reasoning
+          }));
+
+        processedRows.push({
+          ...person,
+          fullOutput: analysis.fullOutput,
+          estimatedPolitics: analysis.politicalLeanings.estimate, // add estimated politics
+          estimatedPoliticsConfidence: analysis.politicalLeanings.confidence,
+          estimatedPoliticsReasoning: analysis.politicalLeanings.reasoning,
+          topIssues,
+          _idx: i
+        });
+
+        console.log(`  ✓ Completed ${person.name}`);
+      } catch (error) {
+        console.error(`  ✗ Error processing ${person.name}:`, error instanceof Error ? error.message : String(error));
+        processedRows.push({
+          ...person,
+          fullOutput: `Error: ${error instanceof Error ? error.message : String(error)}`,
+          estimatedPolitics: 'Error',
+          estimatedPoliticsConfidence: 0,
+          estimatedPoliticsReasoning: 'Error',
+          topIssues: [],
+          _idx: i
+        });
+      }
     }
   }
 
-  // Convert to CSV format
+  // Launch workers
+  await Promise.all(Array.from({ length: concurrency }, (_, idx) => worker(idx + 1)));
+
+  // Convert to CSV format (preserve original input order)
+  processedRows.sort((a, b) => a._idx - b._idx);
   const csvData = processedRows.map(row => {
     const csvRow: any = {
       name: row.name,
@@ -115,6 +145,9 @@ export async function processCsvFile(inputPath: string, outputPath: string): Pro
       context: row.context || '',
       fullOutput: row.fullOutput.replace(/\n/g, ' ').replace(/\r/g, ' '), // Clean newlines for CSV
     };
+    csvRow.estimatedPolitics = row.estimatedPolitics || '';
+    csvRow.estimatedPoliticsConfidence = row.estimatedPoliticsConfidence != null ? row.estimatedPoliticsConfidence : '';
+    csvRow.estimatedPoliticsReasoning = row.estimatedPoliticsReasoning || '';
 
     // Add top 5 issues as separate columns
     for (let i = 1; i <= 5; i++) {
